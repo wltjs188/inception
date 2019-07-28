@@ -1,0 +1,27 @@
+구글에서는 이미지를 쉽게 구분해서 분류하고 학습시킬 수 있는 인셉션이라는 모델을 이미 개발해서 제공하고 있습니다.
+
+이 모델은 이미 사전에 학습된 데이터를 제공하고 있으므로, 이를 이용해 손쉽게 새로운 이미지를 학습시켜 인식시킬 수 있습니다.
+
+
+학습시킬 최상위 디렉토리 (여기서는 flower_photos)
+이미지를 분류해서 원하는 라벨(나중에 텐서플로우는 이미지를 입력받으면 여기서 구분한 기준으로 어느 라벨에 속하는지를 확률값으로 알려주게 됩니다)을 폴더명으로 생성(dandelion, tulips 등)
+라벨 디렉토리 안에 학습시킬 (손으로 이미 분류한) 이미지들을 집어넣음
+
+폴더명을 체크, 스트라이프(가로,세로), 땡땡이, 반팔, 긴팔, 긴바지,반바지, 브이넥, 라운드넥, -데이터셋생성
+
+꽃무늬
+도트무늬
+동물무늬
+줄무늬
+체크무늬
+
+
+https://gusrb.tistory.com/16
+
+http://solarisailab.com/archives/1422
+
+-텐서플로우 공식가이드
+https://www.tensorflow.org/hub/tutorials/image_retraining
+
+1. python retrain.py --image_dir ../pattern --how_many_training_steps 5000
+2. python label_image.py --graph=../pattern/output_graph.pb --labels=../pattern/output_labels.txt --input_layer=Placeholder --output_layer=final_result --image=../testcheck.jpg
