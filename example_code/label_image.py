@@ -13,8 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 
-#이미지파일 경로 76번째줄에 입력
-#cmd창에서 실행해야됨 python label_image.py
+
 
 
 from __future__ import absolute_import
@@ -24,6 +23,7 @@ from __future__ import print_function
 import argparse
 
 import numpy as np
+import requests
 import tensorflow as tf
 
 
@@ -37,6 +37,23 @@ def load_graph(model_file):
     tf.import_graph_def(graph_def)
 
   return graph
+
+def read_tensor_from_image_url(url,
+                               input_height=299,
+                               input_width=299,
+                               input_mean=0,
+                               input_std=255):
+  image_reader = tf.image.decode_jpeg(
+    requests.get(url).content, channels=3, name="jpeg_reader")
+  float_caster = tf.cast(image_reader, tf.float32)
+  dims_expander = tf.expand_dims(float_caster, 0)
+  resized = tf.image.resize_bilinear(dims_expander, [input_height, input_width])
+  normalized = tf.divide(tf.subtract(resized, [input_mean]), [input_std])
+
+  with tf.Session() as sess:
+    return sess.run(normalized)
+
+
 
 
 def read_tensor_from_image_file(file_name,
@@ -77,7 +94,8 @@ def load_labels(label_file):
 
 
 if __name__ == "__main__":
-  file_name = "../testcheck2.jpg"  ##########이미지파일 경로
+  url = "http://i.011st.com/ex_t/R/400x400/1/85/0/src/pd/19/9/6/0/2/0/2/mswMg/1707960202_B.jpg"  #######이미지 url  이거사용하면됨
+  file_name = "../teststripes.jpg"  ##########이미지파일 경로
   model_file = \
     "../pattern/output_graph.pb"
   label_file = "../pattern/output_labels.txt"
@@ -120,20 +138,21 @@ if __name__ == "__main__":
     output_layer = args.output_layer
 
   graph = load_graph(model_file)
-  t = read_tensor_from_image_file(
-      file_name,
+  
+  t = read_tensor_from_image_url(
+      url,
       input_height=input_height,
       input_width=input_width,
       input_mean=input_mean,
       input_std=input_std)
 
-
-  
   input_name = "import/" + input_layer
   output_name = "import/" + output_layer
   input_operation = graph.get_operation_by_name(input_name)
   output_operation = graph.get_operation_by_name(output_name)
 
+  
+  #텐서플로우 실행
   with tf.Session(graph=graph) as sess:
     results = sess.run(output_operation.outputs[0], {
         input_operation.outputs[0]: t
@@ -142,5 +161,5 @@ if __name__ == "__main__":
 
   top_k = results.argsort()[-5:][::-1]
   labels = load_labels(label_file)
-  for i in top_k:
-    print(labels[i], results[i])
+  for i in top_k: #index 0 이 정확도가 가장 높은 결과값 
+    print(labels[i], results[i]) #labels: 패턴결과값, results : 정확도
